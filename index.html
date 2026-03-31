@@ -1,0 +1,178 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            text-align: center;
+        }
+
+        .box {
+            background: #222;
+            margin: 15px auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 60%;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+            width: 80%;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>⚙️ Equipment Maintenance System</h1>
+
+<div class="box">
+    <h3>Enter Sensor Data</h3>
+
+    <label for="t">Temperature</label>
+    <input type="number" id="t" placeholder="Enter Temperature">
+
+    <label for="v">Vibration</label>
+    <input type="number" id="v" placeholder="Enter Vibration">
+
+    <label for="p">Pressure</label>
+    <input type="number" id="p" placeholder="Enter Pressure">
+
+    <label for="c">Current</label>
+    <input type="number" id="c" placeholder="Enter Current">
+
+    <button onclick="predictData()">Predict</button>
+</div>
+
+<div class="box">
+    <h3>Prediction Result</h3>
+    <p id="res"></p>
+</div>
+
+<div class="box">
+    <h3>Maintenance Schedule</h3>
+    <button onclick="getSchedule()">Load</button>
+    <p id="schedule"></p>
+</div>
+
+<div class="box">
+    <h3>Cost Analysis</h3>
+    <button onclick="getCost()">Check</button>
+    <p id="cost"></p>
+</div>
+
+<div class="box">
+    <h3>Root Cause</h3>
+    <button onclick="getRoot()">Analyze</button>
+    <p id="root"></p>
+</div>
+
+<div class="box">
+    <h3>History</h3>
+    <button onclick="getHistory()">Show</button>
+    <p id="history"></p>
+</div>
+
+<script>
+function predictData() {
+    let temp = document.getElementById("t").value;
+    let vib = document.getElementById("v").value;
+    let pres = document.getElementById("p").value;
+    let curr = document.getElementById("c").value;
+
+    fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `temperature=${temp}&vibration=${vib}&pressure=${pres}&current=${curr}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("res").innerHTML =
+            "Risk: " + data.risk +
+            "<br>Score: " + data.score +
+            "<br>Failure Time: " + data.failure;
+    });
+}
+
+function getSchedule() {
+    fetch('/schedule')
+    .then(response => response.json())
+    .then(data => {
+        let text = "";
+        data.forEach(item => {
+            text += item.time + " - " + item.priority + " - " + item.task + "<br>";
+        });
+        document.getElementById("schedule").innerHTML = text;
+    });
+}
+
+function getCost() {
+    fetch('/cost')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("cost").innerHTML =
+            "Predicted: " + data.predicted +
+            "<br>Breakdown: " + data.breakdown +
+            "<br>Saving: " + data.saving;
+    });
+}
+
+function getRoot() {
+    fetch('/root')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("root").innerHTML =
+            "Cause: " + data.cause +
+            "<br>Detail: " + data.detail;
+    });
+}
+
+function getHistory() {
+    fetch('/history')
+    .then(response => response.json())
+    .then(data => {
+        let text = "";
+        data.forEach(item => {
+            text += item.time +
+                    " | T:" + item.temperature +
+                    " V:" + item.vibration +
+                    " P:" + item.pressure +
+                    " C:" + item.current +
+                    " -> " + item.risk + "<br>";
+        });
+        document.getElementById("history").innerHTML = text;
+    });
+}
+</script>
+
+</body>
+</html>
